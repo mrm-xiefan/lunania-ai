@@ -14,7 +14,7 @@ datagen = ImageDataGenerator(
     fill_mode='nearest')
 
 
-img = load_img('./../data/train/cats/cat.1.jpg')
+img = load_img('./cat.1.jpg')
 
 # 画像データをNumpy配列にする(3, 150, 150)
 x = img_to_array(img)
