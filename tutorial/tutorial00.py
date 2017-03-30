@@ -25,8 +25,7 @@ x = x.reshape((1,) + x.shape)
 # 加工した画像をpreviewディレクトリに保存
 # 1枚の画像から21枚の加工データを作成
 i = 0
-for batch in datagen.flow(x, batch_size=1,
-                          save_to_dir='preview', save_prefix='cat', save_format='jpeg'):
+for batch in datagen.flow(x, batch_size=1, save_to_dir='preview', save_prefix='cat', save_format='jpg'):
     i += 1
     if i > 20:
         break

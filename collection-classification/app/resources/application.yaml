@@ -1,0 +1,53 @@
+train:
+  dir: "/var/ria-dataset/app/train/"
+model:
+  dir: "/var/ria-dataset/archive/app/model"
+  vgg16:
+    path:
+      weight: "vgg16/model.h5"
+fcn:
+  dir: "/var/ria-dataset/app/fcn/"
+  predict:
+    modelKey: ""
+tag:
+  fcn:
+    modelKey: "Fcn8sModel-20170301145539"
+    size:
+      eval: "(600, 400)"
+    classes: 16
+    labels: ["背景", "オールインワン", "カットソー", "カーディガン", "コート", "シャツ", "ジャケット", "スカート", "ニット", "パンツ", "パーカ", "ビスチェ", "ブラウス", "ブルゾン", "プルオーバー", "ワンピース"]
+  dressLength:
+    modelKey: "DressLengthModelContainerAtResNet-dress_length-20170306-3class-20170306040201"
+    labels: ["膝上", "膝下", "クロップド"]
+    except: ['背景', "オールインワン", "スカート", "パンツ", "ワンピース"]
+  sleeveLength:
+    modelKey: "SleeveLengthModelContainerAtResNet-sleeve_length-20170306-7class-20170306033430"
+    labels: ["キャミソール", "五分", "ロング", "長袖", "七分", "半袖", "ノースリーブ"]
+    except: ['背景', "スカート", "パンツ"]
+  bottomLength:
+    modelKey: "BottomLengthModelContainerAtResNet-bottom_length-20170306-9class-20170307111235"
+    labels: ["膝上", "アシンメトリー", "膝下", "クロップド", "フルレングス", "ロング", "マイクロミニ", "ミディ", "ミニ"]
+    include: ['背景', "オールインワン", "スカート", "パンツ", "ワンピース"]
+  color:
+    modelKey: "ColorModelConatainerAtResNet-color-20170214-11class-increase-20170214091529"
+    labels: ["beige", "black", "blue", "brown", "gray", "green", "navy", "orange", "pink", "red", "white"]
+  material:
+    modelKey: "MaterialModelContainerAtResNet-material-20170307-5class-20170307071420"
+    labels: ["デニム", "レース", "レザー", "メッシュ", "チュール"]
+  detail:
+    modelKey: "DetailModelContainerAtResNet-detail-20170307-16class-20170307055224"
+    labels: ["ビジュー", "カットアウト", "ドローストリング", "刺繍", "フリル", "フリンジ", "ギャザー", "ハイネック", "パイピング", "プリーツ", "リボン", "ロールアップ", "スパンコール", "スリット", "ウエストマーク", "ジップ"]
+  style:
+    modelKey: "StyleModelContainerAtResNet-style-20170307-3class-20170307074950"
+    labels: ["1", "2", "3"]
+  pattern:
+    modelKey: "PatternModelContainerAtResNet-pattern-20170307-7class-20170307031635"
+    labels: ["アニマル", "花柄", "フォークロア", "ジオメトリック", "ロゴ", "チェック", "ストライプ"]
+
+# web app configuration
+app:
+  flask:
+    DEBUG: false
+    JSONIFY_PRETTYPRINT_REGULAR: true
+    UPLOAD_FOLDER: /var/ria-dataset/archive/app/upload
+

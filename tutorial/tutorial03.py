@@ -49,15 +49,15 @@ from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten , Dense
 
 # 読み込むモデルの重みファイル、書き込むモデルの重みファイルのパスを指定
-WEIGHTS_PATH = '../keras/examples/vgg16_weights.h5'
+WEIGHTS_PATH = '../data/vgg16_weights.h5'
 TOP_MODEL_WEIGHTS_PATH = 'bottleneck_fc_model.h5'
 
 # 画像サイズを指定
 IMG_WIDTH, IMG_HEIGHT = 150,150
 
 
-TRAIN_DATA_DIR = 'data/train'
-VALIDATION_DATA_DIR = 'data/validation'
+TRAIN_DATA_DIR = '../data/train'
+VALIDATION_DATA_DIR = '../data/validation'
 NB_TRAIN_SAMPLES = 2000
 NB_VALIDATION_SAMPLES = 800
 NB_EPOCH = 50

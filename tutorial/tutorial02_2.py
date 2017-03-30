@@ -53,6 +53,7 @@ import tensorflow as tf
 
 import root
 
+print(root.get_project_root())
 WEIGHTS_PATH =  root.get_project_root() + '/data/vgg16_weights.h5'
 TOP_MODEL_WEIGHTS_PATH = root.get_project_root() + '/data/bottleneck_fc_model_2.h5'
 
@@ -66,7 +67,7 @@ NB_VALIDATION_SAMPLES = 800
 NB_EPOCH = 50
 
 
-def save_bottlebeck_features():
+def save_bottleneck_features():
     datagen = ImageDataGenerator(rescale=1./255)
 
     model = Sequential()
@@ -190,5 +191,5 @@ def train_top_model():
     yaml_string = model.to_yaml()
     open(os.path.join(root.get_project_root() + '/data/','cnn_model_2.yaml'), 'w').write(yaml_string)
 
-save_bottlebeck_features()
+save_bottleneck_features()
 train_top_model()

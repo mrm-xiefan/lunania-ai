@@ -108,7 +108,7 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 train_generator = train_datagen.flow_from_directory(
     TRAIN_DATA_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
-    batch_size=128,
+    batch_size=16,
     class_mode='binary')
 
 
@@ -117,7 +117,7 @@ train_generator = train_datagen.flow_from_directory(
 validation_generator = test_datagen.flow_from_directory(
     VALIDATION_DATA_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
-    batch_size=128,
+    batch_size=16,
     class_mode='binary')
 
 

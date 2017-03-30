@@ -52,21 +52,21 @@ import tensorflow as tf
 
 
 # 読み込むモデルの重みファイル、書き込むモデルの重みファイルのパスを指定
-WEIGHTS_PATH = '../keras/examples/vgg16_weights.h5'
+WEIGHTS_PATH = '../data/vgg16_weights.h5'
 TOP_MODEL_WEIGHTS_PATH = 'bottleneck_fc_model.h5'
 
 # 画像サイズを指定
 IMG_WIDTH, IMG_HEIGHT = 150, 150
 
-TRAIN_DATA_DIR = 'data/train'
-VALIDATION_DATA_DIR = 'data/validation'
+TRAIN_DATA_DIR = '../data/train'
+VALIDATION_DATA_DIR = '../data/validation'
 NB_TRAIN_SAMPLES = 2000
 NB_VALIDATION_SAMPLES = 800
 # 学習回数を指定
 NB_EPOCH = 50
 
 
-def save_bottlebeck_features():
+def save_bottleneck_features():
     # 画像の拡大縮小の値を変数に格納
     datagen = ImageDataGenerator(rescale=1./255)
 
@@ -192,5 +192,5 @@ def train_top_model():
     yaml_string = model.to_yaml()
     open(os.path.join('./','cnn_model.yaml'), 'w').write(yaml_string)
 
-save_bottlebeck_features()
+save_bottleneck_features()
 train_top_model()

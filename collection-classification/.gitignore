@@ -1,0 +1,7 @@
+static
+.vscode
+log/**
+!log/.gitkeep
+**/__pycache__/**
+# local config.
+app/resources/application.local.yaml
