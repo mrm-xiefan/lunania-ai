@@ -1,5 +1,5 @@
 #!/usr/bin/env python35
-# -*- coding: utf-8 -*-
+# coding: UTF-8
 
 '''This script goes along the blog post
 "Building powerful image classification models using very little data"
@@ -46,74 +46,69 @@ from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 
-from keras import backend as K
+from keras import backend as  K
 from keras.utils.np_utils import convert_kernel
+from keras.utils import np_utils
 import tensorflow as tf
 
+import root
 
-# 読み込むモデルの重みファイル、書き込むモデルの重みファイルのパスを指定
-WEIGHTS_PATH = '../data/vgg16_weights.h5'
-TOP_MODEL_WEIGHTS_PATH = 'bottleneck_fc_model.h5'
+print(root.get_project_root())
+WEIGHTS_PATH =  root.get_project_root() + '/data/vgg16_weights.h5'
+TOP_MODEL_WEIGHTS_PATH = root.get_project_root() + '/data/bottleneck_fc_model_2.h5'
 
-# 画像サイズを指定
+
 IMG_WIDTH, IMG_HEIGHT = 150, 150
 
-TRAIN_DATA_DIR = '../data/train'
-VALIDATION_DATA_DIR = '../data/validation'
+TRAIN_DATA_DIR = root.get_project_root() + '/data/train'
+VALIDATION_DATA_DIR = root.get_project_root() + '/data/validation'
 NB_TRAIN_SAMPLES = 2000
 NB_VALIDATION_SAMPLES = 800
-# 学習回数を指定
 NB_EPOCH = 50
 
 
 def save_bottleneck_features():
-    # 画像の拡大縮小の値を変数に格納
     datagen = ImageDataGenerator(rescale=1./255)
 
-    # VGG16ネットワークモデルを構築
-	# sequentialモデルを使用
     model = Sequential()
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)))
+    model.add(ZeroPadding2D((1, 1), input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)))
 
     model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_1'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_2'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_1'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_2'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_1'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_2'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_1'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_2'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_1'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_2'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='tf'))
+    model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    # VGG16モデルの重みを読み込み(ImageNetを学習済)
-    # (trained on ImageNet, won the ILSVRC competition in 2014)
-    # note: when there is a complete match between your model definition
-    # and your weight savefile, you can simply call model.load_weights(filename)
+    # VGG16モデルの重みを読み込み(ImageNetの画像で学習済)
     assert os.path.exists(WEIGHTS_PATH), 'Model weights not found (see "WEIGHTS_PATH" variable in script).'
     f = h5py.File(WEIGHTS_PATH)
     for k in range(f.attrs['nb_layers']):
@@ -131,22 +126,17 @@ def save_bottleneck_features():
     print('Model loaded.')
 
     # 学習用データを読み込ませる
-	# directory：ディレクトリへのパス。分類ごとのサブディレクトリを含み、
-    #            そのサブディレクトリにPNGかJPG形式の画像が含まれていなければならない。
-	# target_size：画像のサイズ。すべての画像をこの大きさにリサイズ
-	# batch_size：一度に処理する画像の枚数。
-	# class_mode：返すラベルの配列の型。binaryは2値分類のための値
-	# shuffle：入力データをシャッフルするかどうか
+    # 多値分類では、class_mode='categorical'になる
     generator = datagen.flow_from_directory(
             TRAIN_DATA_DIR,
             target_size=(IMG_WIDTH, IMG_HEIGHT),
             batch_size=32,
-            class_mode=None,
-            shuffle=False)
+            shuffle=False,
+            class_mode='categorical')
 
     # 学習用データの特徴量を算出し保存
     bottleneck_features_train = model.predict_generator(generator, NB_TRAIN_SAMPLES)
-    np.save(open('bottleneck_features_train.npy', 'wb'), bottleneck_features_train)
+    np.save(open(root.get_project_root() + '/data/bottleneck_features_train_2.npy', 'wb'), bottleneck_features_train)
     
     # 検証用データを読み込ませる
 	# 各値は学習用データと同様
@@ -154,30 +144,39 @@ def save_bottleneck_features():
             VALIDATION_DATA_DIR,
             target_size=(IMG_WIDTH, IMG_HEIGHT),
             batch_size=32,
-            class_mode=None,
-            shuffle=False)
+            shuffle=False,
+            class_mode='categorical')
     
     # 検証用データの特徴量を算出し保存
     bottleneck_features_validation = model.predict_generator(generator, NB_VALIDATION_SAMPLES)
-    np.save(open('bottleneck_features_validation.npy', 'wb'), bottleneck_features_validation)
+    np.save(open(root.get_project_root() + '/data/bottleneck_features_validation_2.npy', 'wb'), bottleneck_features_validation)
+
 
 def train_top_model():
-    train_data = np.load(open('bottleneck_features_train.npy', 'rb'))
+    train_data = np.load(open(root.get_project_root() + '/data/bottleneck_features_train_2.npy', 'rb'))
     train_labels = np.array([0] * int((NB_TRAIN_SAMPLES / 2)) + [1] * int((NB_TRAIN_SAMPLES / 2)))
-    
-    validation_data = np.load(open('bottleneck_features_validation.npy', 'rb'))
+    # 全勉強用データの分類クラスを持っていた一次元配列を加工
+    # 入力データ数分の次元をもつ配列にする
+    train_labels = np_utils.to_categorical(train_labels, 2)
+
+    validation_data = np.load(open(root.get_project_root() + '/data/bottleneck_features_validation_2.npy', 'rb'))
     validation_labels = np.array([0] * int((NB_VALIDATION_SAMPLES / 2)) + [1] * int((NB_VALIDATION_SAMPLES / 2)))
-    
-    # 2値分類に有用な層を設定
+    # 全検証用データの分類クラスを持っていた一次元配列を加工
+    # 入力データ数分の次元をもつ配列にする
+    validation_labels = np_utils.to_categorical(validation_labels, 2)
+
+    # 多値分類に有用な層を結合(ソフトマックス関数を利用)
     model = Sequential()
     model.add(Flatten(input_shape=train_data.shape[1:]))
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(1, activation='sigmoid'))
+    model.add(Dense(2, activation='softmax'))
     
+    model.summary()
+
     # modelのコンパイル
-    # 第1引数：最適化手法＝RMSProp、第2引数：損失関数=binary_crossentropy、第3引数：評価指標＝正解率
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+    # 多値分類では損失関数がcategorical_crossentropyになる
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
     
     # コンパイルしたModelに学習させる
     model.fit(train_data, train_labels,
@@ -185,12 +184,12 @@ def train_top_model():
               validation_data=(validation_data, validation_labels))
     model.save_weights(TOP_MODEL_WEIGHTS_PATH)
     
-    # 学習済のモデルをJSON/YAML形式で保存
+    # 学習済のモデルを保存
     print('save the architecture of a model')
     json_string = model.to_json()
-    open(os.path.join('./','cnn_model.json'), 'w').write(json_string)
+    open(os.path.join(root.get_project_root() + '/data/','cnn_model_2.json'), 'w').write(json_string)
     yaml_string = model.to_yaml()
-    open(os.path.join('./','cnn_model.yaml'), 'w').write(yaml_string)
+    open(os.path.join(root.get_project_root() + '/data/','cnn_model_2.yaml'), 'w').write(yaml_string)
 
 save_bottleneck_features()
 train_top_model()
