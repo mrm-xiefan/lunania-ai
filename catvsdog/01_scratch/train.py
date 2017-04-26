@@ -74,7 +74,8 @@ if __name__ == '__main__':
         )
 
         # 結果を保存
-        model.save_weights(os.path.join(config.result_dir, 'smallcnn.h5'))
+        model.save(os.path.join(config.result_dir, 'scratch_model.h5'))
+        model.save_weights(os.path.join(config.result_dir, 'scratch_weights.h5'))
         
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()

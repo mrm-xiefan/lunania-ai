@@ -24,7 +24,7 @@ if __name__ == '__main__':
             raise LunaExcepion(config.inputerr)
 
         if args.model == '1':
-            print(args.model)
+            model = load_model(join_path(result_dir, 'scratch_model.h5'))
         elif args.model == '2':
             print(args.model)
         elif args.model == '3':
