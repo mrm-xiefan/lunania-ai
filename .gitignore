@@ -1,5 +1,5 @@
-*/*.pyc
-*/lock
-*/*.log
-*__pycache__
+**/*.pyc
+**/lock
+**/*.log
+**/__pycache__
 
