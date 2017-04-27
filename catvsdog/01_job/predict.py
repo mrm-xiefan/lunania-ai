@@ -10,6 +10,7 @@ from keras.models import load_model
 from keras.preprocessing import image
 from keras.applications.vgg16 import VGG16
 from keras.layers import Input, Activation, Dropout, Flatten, Dense
+from keras.utils.visualize_util import plot
 import numpy as np
 
 
@@ -65,6 +66,8 @@ if __name__ == '__main__':
             model.summary()
         else:
             raise LunaExcepion(config.inputerr)
+
+        plot(model, to_file='model.png')
 
         # 画像を読み込んで4次元テンソルへ変換
         img = image.load_img(args.image, target_size=(config.img_height, config.img_width))

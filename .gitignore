@@ -2,6 +2,7 @@
 **/lock
 **/*.log
 **/*.swp
+**/*.png
 **/*.npy
 **/__pycache__
 
