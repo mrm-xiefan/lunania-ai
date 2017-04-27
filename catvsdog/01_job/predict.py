@@ -54,7 +54,7 @@ if __name__ == '__main__':
             # 二つのモデルを結合する
             model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
             # 学習済みの重みをロード
-            model.load_weights(os.path.join(config.result_dir, 'finetuning.h5'))
+            model.load_weights(os.path.join(config.result_dir, 'finetuning_weights.h5'))
             # compile
             model.compile(
                 loss='binary_crossentropy',

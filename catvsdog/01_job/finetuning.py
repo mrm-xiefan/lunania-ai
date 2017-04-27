@@ -20,7 +20,8 @@ if __name__ == '__main__':
 
         # VGG16モデルと学習済み重みをロード
         # Fully-connected層（FC）はいらないのでinclude_top=False）
-        vgg16_model = VGG16(include_top=False, weights='imagenet')
+        input_tensor = Input(shape=(config.img_height, config.img_width, 3))
+        vgg16_model = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
         # FC層を構築
         # Flattenへの入力指定はバッチ数を除く
         top_model = Sequential()
