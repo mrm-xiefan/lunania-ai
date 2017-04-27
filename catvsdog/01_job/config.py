@@ -11,6 +11,7 @@ result_dir = join_path(abspath, '..', '90_result')
 
 img_height = 150
 img_width = 150
+channels = 3
 
 syserr = 'S001'
 inputerr = 'B001'

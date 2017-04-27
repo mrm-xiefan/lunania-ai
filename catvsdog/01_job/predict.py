@@ -5,8 +5,11 @@ import traceback
 import argparse
 from luna import LunaExcepion
 
+from keras.models import Sequential, Model
 from keras.models import load_model
 from keras.preprocessing import image
+from keras.applications.vgg16 import VGG16
+from keras.layers import Input, Activation, Dropout, Flatten, Dense
 import numpy as np
 
 
@@ -42,7 +45,26 @@ if __name__ == '__main__':
             # {'dog': 1, 'cat': 0}
             print(pred)
         elif args.model == '2':
-            print(args.model)
+            # 学習済みのモデルをロード
+            top_model = load_model(os.path.join(config.result_dir, 'bottleneck_model.h5'))
+            # VGGのモデルをロード、FC層は自分の学習済みのモデルにするので、不要
+            input_tensor = Input(shape=(config.img_height, config.img_width, config.channels))
+            vgg16_model = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
+            # 二つのモデルを結合する
+            model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+            model.summary()
+            # 画像を読み込んで4次元テンソルへ変換
+            img = image.load_img(args.image, target_size=(config.img_height, config.img_width))
+            x = image.img_to_array(img)
+            x = np.expand_dims(x, axis=0)
+            # 学習時にImageDataGeneratorのrescaleで正規化したので同じ処理が必要
+            x = x / 255.0
+            # クラスを予測
+            # 入力は1枚の画像なので[0]のみ
+            pred = model.predict(x)[0]
+
+            # {'dog': 1, 'cat': 0}
+            print(pred)
         elif args.model == '3':
             print(args.model)
         else:
