@@ -2,5 +2,6 @@
 **/lock
 **/*.log
 **/*.swp
+**/*.npy
 **/__pycache__
 
