@@ -9,6 +9,9 @@ train_dir = join_path(data_dir, 'train')
 validation_dir = join_path(data_dir, 'validation')
 result_dir = join_path(abspath, '..', '90_result')
 
+img_height = 150
+img_width = 150
+
 syserr = 'S001'
 inputerr = 'B001'
 
