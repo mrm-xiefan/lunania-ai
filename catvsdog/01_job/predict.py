@@ -24,7 +24,21 @@ if __name__ == '__main__':
             raise LunaExcepion(config.inputerr)
 
         if args.model == '1':
-            model = load_model(join_path(result_dir, 'scratch_model.h5'))
+            # 学習済みのモデルをロード
+            model = load_model(os.path.join(config.result_dir, 'scratch_model.h5'))
+            model.summary()
+            # 画像を読み込んで4次元テンソルへ変換
+            img = image.load_img(args.image, target_size=(config.img_height, config.img_width))
+            x = image.img_to_array(img)
+            x = np.expand_dims(x, axis=0)
+            # 学習時にImageDataGeneratorのrescaleで正規化したので同じ処理が必要
+            x = x / 255.0
+            # クラスを予測
+            # 入力は1枚の画像なので[0]のみ
+            pred = model.predict(x)[0]
+
+            # {'dog': 1, 'cat': 0}
+            print(pred)
         elif args.model == '2':
             print(args.model)
         elif args.model == '3':
@@ -38,9 +52,7 @@ if __name__ == '__main__':
         utils.error(e.value)
     except Exception as e:
         utils.error(config.syserr)
-        """
         print(e)
         print(traceback.format_exc())
-        """
     utils.unlock()
 

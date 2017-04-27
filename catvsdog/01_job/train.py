@@ -42,6 +42,7 @@ if __name__ == '__main__':
             optimizer='adam',
             metrics=['accuracy']
         )
+        model.summary()
 
         # 訓練データとバリデーションデータを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -63,7 +64,8 @@ if __name__ == '__main__':
             batch_size=32,
             class_mode='binary'
         )
-            
+        print(train_generator.class_indices)
+
         # 訓練
         history = model.fit_generator(
             train_generator,
