@@ -40,7 +40,7 @@ https://blog.keras.io/building-powerful-image-classification-models-using-very-l
 
 # excute
 
-## you can train with 3 method
+## at first you can train with 3 method
 
 ### completely train by yourself
 ```
@@ -60,10 +60,11 @@ cd catvsdog/01_job
 python finetuning.py
 ```
 
-## use weights to predict cat or dog
+## then use weights to predict cat or dog
 
 you can set mode from 1 to 3(1: scratch, 2: bottleneck, 3: finetuning)
-and use image param to specify a image
+
+and use image param to specify an image
 ```
 cd catvsdog/01_job
 python predict.py --mode 3 --image ../99_data/input/1.png

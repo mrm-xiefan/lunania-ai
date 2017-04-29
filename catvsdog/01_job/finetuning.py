@@ -78,11 +78,12 @@ if __name__ == '__main__':
             validation_data=validation_generator,
             nb_val_samples=800
         )
+        utils.plot_history(history)
 
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'finetuning_model.h5'))
         model.save_weights(os.path.join(config.result_dir, 'finetuning_weights.h5'))
-        
+
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)

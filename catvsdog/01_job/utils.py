@@ -10,7 +10,8 @@ def plot_history(history):
     plt.xlabel('epoch')
     plt.ylabel('accuracy')
     plt.legend(loc="lower right")
-    plt.show()
+    #plt.show()
+    plt.savefig('acc.png')
 
     # 損失の履歴をプロット
     plt.plot(history.history['loss'],"o-",label="loss",)
@@ -19,7 +20,8 @@ def plot_history(history):
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.legend(loc='lower right')
-    plt.show()
+    #plt.show()
+    plt.savefig('loss.png')
 
 def lock():
     if os.path.exists(config.lock_file):
