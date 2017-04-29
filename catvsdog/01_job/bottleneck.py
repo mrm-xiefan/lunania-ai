@@ -85,6 +85,7 @@ if __name__ == '__main__':
             batch_size=32,
             validation_data=(validation_data, validation_labels)
         )
+        utils.plot_history(history)
 
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'bottleneck_model.h5'))
