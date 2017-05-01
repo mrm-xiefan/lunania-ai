@@ -1,0 +1,17 @@
+1       80      Tulip
+81      160     Snowdrop
+161     240     LilyValley
+241     320     Bluebell
+321     400     Crocus
+401     480     Iris
+481     560     Tigerlily
+561     640     Daffodil
+641     720     Fritillary
+721     800     Sunflower
+801     880     Daisy
+881     960     ColtsFoot
+961     1040    Dandelion
+1041    1120    Cowslip
+1121    1200    Buttercup
+1201    1280    Windflower
+1281    1360    Pansy
