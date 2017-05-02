@@ -1,6 +1,6 @@
 import os
 import config
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 def preprocess_images(images):

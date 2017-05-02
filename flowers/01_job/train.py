@@ -4,33 +4,33 @@ import config
 import traceback
 from luna import LunaExcepion
 
-from keras.applications.vgg16 import VGG16
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential, Model
-from keras.layers import Input, Activation, Dropout, Flatten, Dense
-from keras import optimizers
-import numpy as np
-
-classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
-           'Iris', 'Tigerlily', 'Daffodil', 'Fritillary', 'Sunflower',
-           'Daisy', 'ColtsFoot', 'Dandelion', 'Cowslip', 'Buttercup',
-           'Windflower', 'Pansy']
-nb_classes = len(classes)
-nb_train_samples = 1190
-nb_val_samples = 170
-nb_epoch = 50
-
 
 if __name__ == '__main__':
     try:
         utils.lock()
+
+        from keras.applications.vgg16 import VGG16
+        from keras.preprocessing.image import ImageDataGenerator
+        from keras.models import Sequential, Model
+        from keras.layers import Input, Activation, Dropout, Flatten, Dense
+        from keras import optimizers
+        import numpy as np
+
+        classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
+                   'Iris', 'Tigerlily', 'Daffodil', 'Fritillary', 'Sunflower',
+                   'Daisy', 'ColtsFoot', 'Dandelion', 'Cowslip', 'Buttercup',
+                   'Windflower', 'Pansy']
+        nb_classes = len(classes)
+        nb_train_samples = 1190
+        nb_val_samples = 170
+        nb_epoch = 50
 
         if not os.path.exists(config.result_dir):
             os.mkdir(config.result_dir)
 
         # VGG16モデルと学習済み重みをロード
         # Fully-connected層（FC）はいらないのでinclude_top=False）
-        input_tensor = Input(shape=(config.img_height, config.img_width, 3))
+        input_tensor = Input(shape=(config.img_height, config.img_width, config.channels))
         vgg16_model = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
         # FC層を構築
         # Flattenへの入力指定はバッチ数を除く
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         top_model.add(Flatten(input_shape=vgg16_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(1, activation='softmax'))
+        top_model.add(Dense(nb_classes, activation='softmax'))
         # 二つのモデルを結合する
         model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
         # 最後のconv層の直前までの層をfreeze
@@ -92,7 +92,7 @@ if __name__ == '__main__':
             validation_data=validation_generator,
             nb_val_samples=nb_val_samples
         )
-        utils.plot_history(history)
+        #utils.plot_history(history)
 
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'finetuning_model.h5'))
