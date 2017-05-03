@@ -2,11 +2,17 @@ import os
 import utils
 import config
 import traceback
+import logging.config
 from luna import LunaExcepion
+
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
 
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
 
         from keras.applications.vgg16 import VGG16
@@ -14,6 +20,7 @@ if __name__ == '__main__':
         from keras.models import Sequential, Model
         from keras.layers import Input, Activation, Dropout, Flatten, Dense
         from keras import optimizers
+        from keras.utils.visualize_util import plot
         import numpy as np
 
         classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
@@ -45,13 +52,14 @@ if __name__ == '__main__':
         for layer in model.layers[:15]:
             layer.trainable = False
 
-        model.summary()
-
         model.compile(
             loss='categorical_crossentropy',
             optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
             metrics=['accuracy']
         )
+
+        model.summary()
+        plot(model, to_file='model.png')
 
         # 訓練データを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -92,7 +100,7 @@ if __name__ == '__main__':
             validation_data=validation_generator,
             nb_val_samples=nb_val_samples
         )
-        #utils.plot_history(history)
+        utils.plot_history(history)
 
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'finetuning_model.h5'))
@@ -105,8 +113,8 @@ if __name__ == '__main__':
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        print(e)
-        print(traceback.format_exc())
     utils.unlock()
-
+    logger.info("------ end ------")

@@ -2,16 +2,26 @@ import os
 import utils
 import config
 import traceback
+import logging.config
 from luna import LunaExcepion
 
-from keras.models import Sequential
-from keras.layers import Convolution2D, MaxPooling2D
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras.preprocessing.image import ImageDataGenerator
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
+
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
+
+
+        from keras.models import Sequential
+        from keras.layers import Convolution2D, MaxPooling2D
+        from keras.layers import Activation, Dropout, Flatten, Dense
+        from keras.preprocessing.image import ImageDataGenerator
+        from keras.utils.visualize_util import plot
+
 
         if not os.path.exists(config.result_dir):
             os.mkdir(config.result_dir)
@@ -42,7 +52,9 @@ if __name__ == '__main__':
             optimizer='adam',
             metrics=['accuracy']
         )
-        model.summary()
+
+        #model.summary()
+        plot(model, to_file='model.png')
 
         # 訓練データとバリデーションデータを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -79,17 +91,16 @@ if __name__ == '__main__':
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'scratch_model.h5'))
         model.save_weights(os.path.join(config.result_dir, 'scratch_weights.h5'))
-        
+        utils.save_history(history, os.path.join(config.result_dir, 'scratch_history.txt'))
+
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        """
-        print(e)
-        print(traceback.format_exc())
-        """
     utils.unlock()
-
+    logger.info("------ end ------")

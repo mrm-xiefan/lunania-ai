@@ -2,18 +2,28 @@ import os
 import utils
 import config
 import traceback
+import logging.config
 from luna import LunaExcepion
 
-from keras.applications.vgg16 import VGG16
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential, Model
-from keras.layers import Input, Activation, Dropout, Flatten, Dense
-from keras import optimizers
-import numpy as np
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
+
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
+
+
+        from keras.applications.vgg16 import VGG16
+        from keras.preprocessing.image import ImageDataGenerator
+        from keras.models import Sequential, Model
+        from keras.layers import Input, Activation, Dropout, Flatten, Dense
+        from keras import optimizers
+        from keras.utils.visualize_util import plot
+        import numpy as np
+
 
         if not os.path.exists(config.result_dir):
             os.mkdir(config.result_dir)
@@ -29,21 +39,20 @@ if __name__ == '__main__':
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
         top_model.add(Dense(1, activation='sigmoid'))
-        # これはやらなくてよし
-        #top_model.load_weights(os.path.join(config.result_dir, 'bottleneck_fc_model.h5'))
         # 二つのモデルを結合する
         model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
         # 最後のconv層の直前までの層をfreeze
         for layer in model.layers[:15]:
             layer.trainable = False
 
-        model.summary()
-
         model.compile(
             loss='binary_crossentropy',
             optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
             metrics=['accuracy']
         )
+
+        #model.summary()
+        plot(model, to_file='model.png')
 
         # 訓練データを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -83,6 +92,7 @@ if __name__ == '__main__':
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'finetuning_model.h5'))
         model.save_weights(os.path.join(config.result_dir, 'finetuning_weights.h5'))
+        utils.save_history(history, os.path.join(config.result_dir, 'finetuning_history.txt'))
 
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
@@ -90,8 +100,8 @@ if __name__ == '__main__':
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        print(e)
-        print(traceback.format_exc())
     utils.unlock()
-
+    logger.info("------ end ------")

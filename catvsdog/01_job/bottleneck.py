@@ -2,18 +2,28 @@ import os
 import utils
 import config
 import traceback
+import logging.config
 from luna import LunaExcepion
 
-from keras.applications.vgg16 import VGG16
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras import optimizers
-import numpy as np
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
+
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
+
+
+        from keras.applications.vgg16 import VGG16
+        from keras.preprocessing.image import ImageDataGenerator
+        from keras.models import Sequential
+        from keras.layers import Activation, Dropout, Flatten, Dense
+        from keras import optimizers
+        from keras.utils.visualize_util import plot
+        import numpy as np
+
 
         if not os.path.exists(config.result_dir):
             os.mkdir(config.result_dir)
@@ -21,7 +31,7 @@ if __name__ == '__main__':
         # VGG16モデルと学習済み重みをロード
         # Fully-connected層（FC）はいらないのでinclude_top=False）
         model = VGG16(include_top=False, weights='imagenet')
-        model.summary()
+        # model.summary()
 
         # 訓練データを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(rescale=1.0 / 255)
@@ -55,14 +65,10 @@ if __name__ == '__main__':
         # ジェネレータではshuffle=Falseなので最初の1000枚がcat、次の1000枚がdog
         train_data = np.load(os.path.join(config.result_dir, 'bottleneck_features_train.npy'))
         train_labels = np.array([0] * int(2000 / 2) + [1] * int(2000 / 2))
-        # (2000, 4, 4, 512)
-        print(train_data.shape)
 
         # バリデーションデータをロード
         validation_data = np.load(os.path.join(config.result_dir, 'bottleneck_features_validation.npy'))
         validation_labels = np.array([0] * int(800 / 2) + [1] * int(800 / 2))
-        # (800, 4, 4, 512)
-        print(validation_data.shape)
 
         # FCネットワークを構築
         model = Sequential()
@@ -77,6 +83,9 @@ if __name__ == '__main__':
             metrics=['accuracy']
         )
 
+        #model.summary()
+        plot(model, to_file='model.png')
+
         # 訓練
         history = model.fit(
             train_data,
@@ -90,15 +99,16 @@ if __name__ == '__main__':
         # 結果を保存
         model.save(os.path.join(config.result_dir, 'bottleneck_model.h5'))
         model.save_weights(os.path.join(config.result_dir, 'bottleneck_weights.h5'))
-        
+        utils.save_history(history, os.path.join(config.result_dir, 'bottleneck_history.txt'))
+
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        print(e)
-        print(traceback.format_exc())
     utils.unlock()
-
+    logger.info("------ end ------")

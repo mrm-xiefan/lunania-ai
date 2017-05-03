@@ -3,36 +3,43 @@ import utils
 import config
 import traceback
 import argparse
+import logging.config
 from luna import LunaExcepion
 
-from keras.models import Sequential, Model
-from keras.models import load_model
-from keras.preprocessing import image
-from keras.applications.vgg16 import VGG16
-from keras.layers import Input, Activation, Dropout, Flatten, Dense
-from keras.utils.visualize_util import plot
-import numpy as np
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='1', help='1: small cnn. 2: top trained. 3: fine tuned')
+    parser.add_argument('--model', default='1', help='1: small cnn. 2: top trained. 3: fine tuned.')
     parser.add_argument('--image', required=True, help='input an image to predict')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
 
         args = parse_args()
         if not os.path.exists(args.image):
             raise LunaExcepion(config.inputerr)
 
+
+        from keras.models import Sequential, Model
+        from keras.models import load_model
+        from keras.preprocessing import image
+        from keras.applications.vgg16 import VGG16
+        from keras.layers import Input, Activation, Dropout, Flatten, Dense
+        import numpy as np
+
+
         if args.model == '1':
             # 学習済みのモデルをロード
             model = load_model(os.path.join(config.result_dir, 'scratch_model.h5'))
-            model.summary()
+            # model.summary()
         elif args.model == '2':
             # 学習済みのモデルをロード
             top_model = load_model(os.path.join(config.result_dir, 'bottleneck_model.h5'))
@@ -41,7 +48,7 @@ if __name__ == '__main__':
             vgg16_model = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
             # 二つのモデルを結合する
             model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
-            model.summary()
+            # model.summary()
         elif args.model == '3':
             # VGGのモデルをロード、FC層は自分の学習済みのモデルにするので、不要
             input_tensor = Input(shape=(config.img_height, config.img_width, config.channels))
@@ -63,11 +70,9 @@ if __name__ == '__main__':
                 metrics=['accuracy']
             )
 
-            model.summary()
+            # model.summary()
         else:
             raise LunaExcepion(config.inputerr)
-
-        plot(model, to_file='model.png')
 
         # 画像を読み込んで4次元テンソルへ変換
         img = image.load_img(args.image, target_size=(config.img_height, config.img_width))
@@ -87,8 +92,8 @@ if __name__ == '__main__':
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        print(e)
-        print(traceback.format_exc())
     utils.unlock()
-
+    logger.info("------ end ------")

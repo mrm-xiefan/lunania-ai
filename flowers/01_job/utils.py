@@ -1,7 +1,10 @@
 import os
 import config
-#import matplotlib.pyplot as plt
+import logging
+import matplotlib.pyplot as plt
 
+
+logger = logging.getLogger()
 
 def preprocess_images(images):
     # 'RGB'->'BGR'
@@ -58,5 +61,6 @@ def unlock():
         os.remove(config.lock_file)
 
 def error(code):
+    logger.error(code)
     print({'error': code})
 

@@ -3,8 +3,12 @@ import utils
 import config
 import traceback
 import argparse
+import logging.config
 from luna import LunaExcepion
 
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -14,6 +18,7 @@ def parse_args():
 
 if __name__ == '__main__':
     try:
+        logger.info("------ start ------")
         utils.lock()
 
         args = parse_args()
@@ -25,7 +30,6 @@ if __name__ == '__main__':
         from keras.preprocessing import image
         from keras.applications.vgg16 import VGG16
         from keras.layers import Input, Activation, Dropout, Flatten, Dense
-        from keras.utils.visualize_util import plot
         import numpy as np
 
         classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
@@ -54,9 +58,6 @@ if __name__ == '__main__':
             metrics=['accuracy']
         )
 
-        model.summary()
-        #plot(model, to_file='model.png')
-
         # 画像を読み込んで4次元テンソルへ変換
         img = image.load_img(args.image, target_size=(config.img_height, config.img_width))
         x = image.img_to_array(img)
@@ -79,8 +80,8 @@ if __name__ == '__main__':
     except LunaExcepion as e:
         utils.error(e.value)
     except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         utils.error(config.syserr)
-        print(e)
-        print(traceback.format_exc())
     utils.unlock()
-
+    logger.info("------ end ------")
