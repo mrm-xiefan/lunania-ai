@@ -30,7 +30,7 @@ if __name__ == '__main__':
         nb_classes = len(classes)
         nb_train_samples = 1190
         nb_val_samples = 170
-        nb_epoch = 50
+        nb_epoch = 60
 
         if not os.path.exists(config.result_dir):
             os.mkdir(config.result_dir)

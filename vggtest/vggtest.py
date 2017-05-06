@@ -1,39 +1,59 @@
-from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
-from keras.preprocessing import image
-import numpy as np
-import sys
+import os
+import utils
+import config
+import traceback
+import argparse
+import logging.config
+from luna import LunaExcepion
 
-"""
-ImageNetで学習済みのVGG16モデルを使って入力画像のクラスを予測する
-"""
 
-if len(sys.argv) != 2:
-    print("usage: python vggtest.py [image file]")
-    sys.exit(1)
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-filename = sys.argv[1]
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image', required=True, help='input an image to predict')
+    return parser.parse_args()
 
-# 学習済みのVGG16をロード
-# 構造とともに学習済みの重みも読み込まれる
-model = VGG16(weights='imagenet')
-# model.summary()
 
-# 引数で指定した画像ファイルを読み込む
-# サイズはVGG16のデフォルトである224x224にリサイズされる
-img = image.load_img(filename, target_size=(224, 224))
+if __name__ == '__main__':
+    try:
+        logger.info("------ start ------")
+        utils.lock()
 
-# 読み込んだPIL形式の画像をarrayに変換
-x = image.img_to_array(img)
+        args = parse_args()
+        if not os.path.exists(args.image):
+            raise LunaExcepion(config.inputerr)
 
-# 3次元テンソル（rows, cols, channels) を
-# 4次元テンソル (samples, rows, cols, channels) に変換
-# 入力画像は1枚なのでsamples=1でよい
-x = np.expand_dims(x, axis=0)
+        from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
+        from keras.preprocessing import image
+        import numpy as np
 
-# Top-5のクラスを予測する
-# VGG16の1000クラスはdecode_predictions()で文字列に変換される
-preds = model.predict(preprocess_input(x))
-results = decode_predictions(preds, top=5)[0]
-for result in results:
-    print(result)
+        # 学習済みのVGG16をロード
+        # 構造とともに学習済みの重みも読み込まれる
+        model = VGG16(weights='imagenet')
 
+        # 画像を読み込んで4次元テンソルへ変換
+        img = image.load_img(args.image, target_size=(224, 224))
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        # クラスを予測
+        # 入力は1枚の画像なので[0]のみ
+        preds = model.predict(preprocess_input(x))
+
+        # 予測確率が高いトップ5を出力
+        results = decode_predictions(preds, top=5)[0]
+        for result in results:
+            print(result)
+    except (KeyboardInterrupt, SystemExit):
+        utils.unlock()
+        utils.error(config.syserr)
+    except LunaExcepion as e:
+        utils.error(e.value)
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
+        utils.error(config.syserr)
+    utils.unlock()
+    logger.info("------ end ------")

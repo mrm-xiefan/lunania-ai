@@ -9,6 +9,7 @@ from luna import LunaExcepion
 
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def parse_args():
     parser = argparse.ArgumentParser()

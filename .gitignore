@@ -1,4 +1,5 @@
 **/*.pyc
+**/90_result
 **/lock
 **/*.log
 **/*.swp

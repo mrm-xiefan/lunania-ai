@@ -90,7 +90,7 @@ if __name__ == '__main__':
         history = model.fit(
             train_data,
             train_labels,
-            nb_epoch=10,
+            nb_epoch=50,
             batch_size=32,
             validation_data=(validation_data, validation_labels)
         )

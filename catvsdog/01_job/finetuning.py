@@ -83,7 +83,7 @@ if __name__ == '__main__':
         history = model.fit_generator(
             train_generator,
             samples_per_epoch=2000,
-            nb_epoch=10,
+            nb_epoch=50,
             validation_data=validation_generator,
             nb_val_samples=800
         )
