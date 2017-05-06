@@ -86,7 +86,7 @@ if __name__ == '__main__':
         pred = model.predict(x)[0]
 
         # {'dog': 1, 'cat': 0}
-        print(pred)
+        print({"error": "", "data": {"value": '%.10f' % (pred[0])}})
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)

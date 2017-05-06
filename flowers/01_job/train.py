@@ -58,7 +58,7 @@ if __name__ == '__main__':
             metrics=['accuracy']
         )
 
-        model.summary()
+        # model.summary()
         plot(model, to_file='model.png')
 
         # 訓練データを生成するジェネレータを作成

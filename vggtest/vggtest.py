@@ -45,7 +45,7 @@ if __name__ == '__main__':
         # 予測確率が高いトップ5を出力
         results = decode_predictions(preds, top=5)[0]
         for result in results:
-            print(result)
+            print({"error": "", "data": {"name": result[1], "percentage": '%.10f' % (result[2] * 100)}})
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)

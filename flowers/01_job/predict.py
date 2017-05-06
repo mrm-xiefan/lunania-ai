@@ -74,7 +74,7 @@ if __name__ == '__main__':
         top_indices = pred.argsort()[-top:][::-1]
         result = [(classes[i], pred[i]) for i in top_indices]
         for x in result:
-            print(x)
+            print({"error": "", "data": {"name": x[0], "percentage": '%.10f' % (x[1] * 100)}})
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)
