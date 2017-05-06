@@ -67,6 +67,7 @@ python finetuning.py
 you can set mode from 1 to 3(1: scratch, 2: bottleneck, 3: finetuning)
 
 and use image param to specify an image.
+
 *for example:*
 ```
 cd catvsdog/01_job
