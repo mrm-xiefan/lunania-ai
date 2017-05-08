@@ -15,4 +15,5 @@ channels = 3
 
 syserr = 'S001'
 inputerr = 'B001'
+locked = 'B002'
 

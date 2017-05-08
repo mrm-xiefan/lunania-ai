@@ -106,6 +106,9 @@ if __name__ == '__main__':
         utils.error(config.syserr)
     except LunaExcepion as e:
         utils.error(e.value)
+        if (e.value == config.locked):
+            exit()
+            logger.info("------ end ------")
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())

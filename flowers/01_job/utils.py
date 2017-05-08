@@ -4,9 +4,11 @@ import logging
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from luna import LunaExcepion
 
 
 logger = logging.getLogger()
+
 
 def preprocess_images(images):
     # 'RGB'->'BGR'
@@ -52,7 +54,7 @@ def plot_history(history):
 
 def lock():
     if os.path.exists(config.lock_file):
-        exit('Previous process is not yet finished.')
+        raise LunaExcepion(config.locked)
     lock_file = open(config.lock_file, 'w')
     lock_file.write(str(os.getpid()))
     lock_file.close()
