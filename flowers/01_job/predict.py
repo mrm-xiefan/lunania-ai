@@ -49,7 +49,7 @@ if __name__ == '__main__':
         top_model.add(Dropout(0.5))
         top_model.add(Dense(nb_classes, activation='softmax'))
         # 二つのモデルを結合する
-        model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+        model = Model(inputs=vgg16_model.input, outputs=top_model(vgg16_model.output))
         # 学習済みの重みをロード
         model.load_weights(os.path.join(config.result_dir, 'finetuning_weights.h5'))
         # compile

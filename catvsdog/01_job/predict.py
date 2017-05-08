@@ -48,7 +48,7 @@ if __name__ == '__main__':
             input_tensor = Input(shape=(config.img_height, config.img_width, config.channels))
             vgg16_model = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
             # 二つのモデルを結合する
-            model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+            model = Model(inputs=vgg16_model.input, outputs=top_model(vgg16_model.output))
             # model.summary()
         elif args.model == '3':
             # VGGのモデルをロード、FC層は自分の学習済みのモデルにするので、不要
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             top_model.add(Dropout(0.5))
             top_model.add(Dense(1, activation='sigmoid'))
             # 二つのモデルを結合する
-            model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+            model = Model(inputs=vgg16_model.input, outputs=top_model(vgg16_model.output))
             # 学習済みの重みをロード
             model.load_weights(os.path.join(config.result_dir, 'finetuning_weights.h5'))
             # compile

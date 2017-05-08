@@ -20,7 +20,7 @@ if __name__ == '__main__':
         from keras.models import Sequential, Model
         from keras.layers import Input, Activation, Dropout, Flatten, Dense
         from keras import optimizers
-        from keras.utils.visualize_util import plot
+        from keras.utils.vis_utils import plot_model
         import numpy as np
 
         classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         top_model.add(Dropout(0.5))
         top_model.add(Dense(nb_classes, activation='softmax'))
         # 二つのモデルを結合する
-        model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+        model = Model(inputs=vgg16_model.input, outputs=top_model(vgg16_model.output))
         # 最後のconv層の直前までの層をfreeze
         for layer in model.layers[:15]:
             layer.trainable = False
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         )
 
         # model.summary()
-        plot(model, to_file='model.png')
+        plot_model(model, to_file='model.png')
 
         # 訓練データを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -90,15 +90,15 @@ if __name__ == '__main__':
             shuffle=True
         )
 
-        print(train_generator.class_indices)
+        # print(train_generator.class_indices)
 
         # 訓練
         history = model.fit_generator(
-            train_generator,
-            samples_per_epoch=nb_train_samples,
-            nb_epoch=nb_epoch,
+            generator=train_generator,
+            steps_per_epoch=int(np.floor(nb_train_samples/32)),
+            epochs=nb_epoch,
             validation_data=validation_generator,
-            nb_val_samples=nb_val_samples
+            validation_steps=int(np.floor(nb_val_samples/32))
         )
         utils.plot_history(history)
 

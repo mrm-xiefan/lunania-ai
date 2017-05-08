@@ -21,7 +21,7 @@ if __name__ == '__main__':
         from keras.models import Sequential, Model
         from keras.layers import Input, Activation, Dropout, Flatten, Dense
         from keras import optimizers
-        from keras.utils.visualize_util import plot
+        from keras.utils.vis_utils import plot_model
         import numpy as np
 
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         top_model.add(Dropout(0.5))
         top_model.add(Dense(1, activation='sigmoid'))
         # 二つのモデルを結合する
-        model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
+        model = Model(inputs=vgg16_model.input, outputs=top_model(vgg16_model.output))
         # 最後のconv層の直前までの層をfreeze
         for layer in model.layers[:15]:
             layer.trainable = False
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         )
 
         #model.summary()
-        plot(model, to_file='model.png')
+        plot_model(model, to_file='model.png')
 
         # 訓練データを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -81,11 +81,11 @@ if __name__ == '__main__':
 
         # 訓練
         history = model.fit_generator(
-            train_generator,
-            samples_per_epoch=2000,
-            nb_epoch=50,
+            generator=train_generator,
+            steps_per_epoch=int(np.floor(2000/32)),
+            epochs=50,
             validation_data=validation_generator,
-            nb_val_samples=800
+            validation_steps=int(np.floor(800/32))
         )
         utils.plot_history(history)
 

@@ -21,7 +21,7 @@ if __name__ == '__main__':
         from keras.models import Sequential
         from keras.layers import Activation, Dropout, Flatten, Dense
         from keras import optimizers
-        from keras.utils.visualize_util import plot
+        from keras.utils.vis_utils import plot_model
         import numpy as np
 
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             shuffle=False
         )
         # ジェネレータから生成される画像を入力し、VGG16の出力をファイルに保存
-        bottleneck_features_train = model.predict_generator(train_generator, 2000)
+        bottleneck_features_train = model.predict_generator(train_generator, 2000/32)
         np.save(os.path.join(config.result_dir, 'bottleneck_features_train.npy'), bottleneck_features_train)
 
         # 検証データを生成するジェネレータを作成
@@ -56,10 +56,10 @@ if __name__ == '__main__':
             shuffle=False
         )
         # ジェネレータから生成される画像を入力し、VGG16の出力をファイルに保存
-        bottleneck_features_validation = model.predict_generator(validation_generator, 800)
+        bottleneck_features_validation = model.predict_generator(validation_generator, 800/32)
         np.save(os.path.join(config.result_dir, 'bottleneck_features_validation.npy'), bottleneck_features_validation)
 
-        print(train_generator.class_indices)
+        # print(train_generator.class_indices)
 
         # 訓練データをロード
         # ジェネレータではshuffle=Falseなので最初の1000枚がcat、次の1000枚がdog
@@ -84,14 +84,14 @@ if __name__ == '__main__':
         )
 
         #model.summary()
-        plot(model, to_file='model.png')
+        plot_model(model, to_file='model.png')
 
         # 訓練
         history = model.fit(
             train_data,
             train_labels,
-            nb_epoch=50,
             batch_size=32,
+            epochs=50,
             validation_data=(validation_data, validation_labels)
         )
         utils.plot_history(history)

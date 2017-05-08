@@ -17,10 +17,11 @@ if __name__ == '__main__':
 
 
         from keras.models import Sequential
-        from keras.layers import Convolution2D, MaxPooling2D
+        from keras.layers import Conv2D, MaxPooling2D
         from keras.layers import Activation, Dropout, Flatten, Dense
         from keras.preprocessing.image import ImageDataGenerator
-        from keras.utils.visualize_util import plot
+        from keras.utils.vis_utils import plot_model
+        import numpy as np
 
 
         if not os.path.exists(config.result_dir):
@@ -28,15 +29,15 @@ if __name__ == '__main__':
 
         # モデルを構築
         model = Sequential()
-        model.add(Convolution2D(32, 3, 3, input_shape=(150, 150, 3)))
+        model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 3)))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Convolution2D(32, 3, 3))
+        model.add(Conv2D(32, (3, 3)))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Convolution2D(64, 3, 3))
+        model.add(Conv2D(64, (3, 3)))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
         )
 
         #model.summary()
-        plot(model, to_file='model.png')
+        plot_model(model, to_file='model.png')
 
         # 訓練データとバリデーションデータを生成するジェネレータを作成
         train_datagen = ImageDataGenerator(
@@ -80,11 +81,11 @@ if __name__ == '__main__':
 
         # 訓練
         history = model.fit_generator(
-            train_generator,
-            samples_per_epoch=2000,
-            nb_epoch=50,
+            generator=train_generator,
+            steps_per_epoch=int(np.floor(2000/32)),
+            epochs=50,
             validation_data=validation_generator,
-            nb_val_samples=800
+            validation_steps=int(np.floor(800/32))
         )
         utils.plot_history(history)
 
