@@ -9,7 +9,7 @@ from luna import LunaExcepion
 
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -44,8 +44,10 @@ if __name__ == '__main__':
 
         # 予測確率が高いトップ5を出力
         results = decode_predictions(preds, top=5)[0]
+        data = []
         for result in results:
-            print({"error": "", "data": {"name": result[1], "percentage": '%.10f' % (result[2] * 100)}})
+            data.append({"name": result[1], "percentage": '%.10f' % (result[2] * 100)});
+        print({"error": "", "data": data})
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)

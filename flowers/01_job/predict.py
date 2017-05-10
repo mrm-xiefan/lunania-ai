@@ -73,8 +73,10 @@ if __name__ == '__main__':
         top = 5
         top_indices = pred.argsort()[-top:][::-1]
         result = [(classes[i], pred[i]) for i in top_indices]
+        data = []
         for x in result:
-            print({"error": "", "data": {"name": x[0], "percentage": '%.10f' % (x[1] * 100)}})
+            data.append({"name": x[0], "percentage": '%.10f' % (x[1] * 100)})
+        print({"error": "", "data": data})
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()
         utils.error(config.syserr)
