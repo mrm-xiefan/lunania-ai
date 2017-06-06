@@ -3,7 +3,7 @@ import os
 
 
 abspath = os.path.dirname(os.path.abspath(__file__))
-lock_file = os.path.join(abspath, 'lock')
+lock_file = '/home/ai/lock'
 data_dir = join_path(abspath, '..', '99_data')
 train_dir = join_path(data_dir, 'train')
 validation_dir = join_path(data_dir, 'validation')
