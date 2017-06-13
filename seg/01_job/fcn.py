@@ -24,7 +24,6 @@ from keras.models import Model
 from keras.utils import vis_utils
 from keras.preprocessing.image import img_to_array, load_img
 from keras.applications.resnet50 import ResNet50
-from processor import SegmentationProcessor, CrfSegmentationProcessor
 from PIL import Image
 
 logging.config.fileConfig("logging.conf")
@@ -95,20 +94,33 @@ class Fcn:
             self.model.load_weights(os.path.join(config.model_dir, model_name, self.WEIGHTS_FILE_NAME), by_name=True)
 
     def predict(self, image_file):
-        image_file = Path(image_file)
-        img = load_img(image_file, grayscale=False, target_size=(config.img_height, config.img_width))
-        img_array = img_to_array(img)
+        pre_array = np.asarray(Image.open(image_file))
+        logger.debug(pre_array.shape)
+        trim_h = pre_array.shape[0]
+        trim_w = pre_array.shape[1]
+
+        img_array = np.zeros([config.img_height, config.img_width, 3])
+        img_array[0:pre_array.shape[0], 0:pre_array.shape[1], 0:pre_array.shape[2]] = pre_array
         img_array /= 255
+        logger.debug(img_array.shape)
+
         result = self.model.predict_on_batch(img_array.reshape((1,) + img_array.shape))
         logger.debug(result.shape)
         label_data = []
         for i in range(len(result[0])):
             label_data.append(np.argmax(result[0][i]))
         fresult = np.reshape(label_data, (config.img_height, config.img_width))
-        logger.debug(fresult.shape)
-        fresult, predict_labels = colorful(fresult)
+
+        # trim back
+        trim_jpg = np.zeros([trim_h, trim_w])
+        trim_jpg = fresult[0:trim_h, 0:trim_w]
+
+        trim_jpg, predict_labels = colorful(trim_jpg)
+
+        image_file = Path(image_file)
         file_name = image_file.stem
-        im = Image.fromarray(np.uint8(fresult))
+
+        im = Image.fromarray(np.uint8(trim_jpg))
         result_img = join_path(config.predict_dir, file_name + '-predict.jpg')
         im.save(result_img)
         return file_name + '-predict.jpg', predict_labels
