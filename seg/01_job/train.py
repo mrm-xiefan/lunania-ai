@@ -31,14 +31,13 @@ if __name__ == '__main__':
             raise LunaExcepion(config.inputerr)
 
         from fcn import Fcn
-        import numpy as np
 
         if not os.path.exists(config.model_dir):
             os.mkdir(config.model_dir)
 
         fcn = Fcn(args.model)
+        fcn.createModel()
         fcn.train(args.data, args.epoch)
-        logger.info("------ end ------")
 
     except (KeyboardInterrupt, SystemExit):
         utils.unlock()

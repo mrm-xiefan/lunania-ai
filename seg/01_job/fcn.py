@@ -10,6 +10,7 @@ import config
 import traceback
 import logging.config
 from datetime import datetime
+from pathlib import Path
 from luna import LunaExcepion
 
 import h5py
@@ -18,10 +19,13 @@ from keras import backend as K
 from keras.layers import (Activation, Conv2D, Cropping2D,
                           Conv2DTranspose, Dropout, Input, MaxPooling2D,
                           Permute, Reshape, UpSampling2D, ZeroPadding2D, merge)
+from keras import models
 from keras.models import Model
 from keras.utils import vis_utils
 from keras.preprocessing.image import img_to_array, load_img
 from keras.applications.resnet50 import ResNet50
+from processor import SegmentationProcessor, CrfSegmentationProcessor
+from PIL import Image
 
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
@@ -33,8 +37,10 @@ class Fcn:
     WEIGHTS_FILE_NAME = 'model.h5'
     ALL_IN_MODEL_FILE_NAME = 'model_all.h5'
 
-    def __init__(self, model_type):
+    def __init__(self, model_type = 'predict'):
         self.model_type = model_type
+
+    def createModel(self):
         self.epoch = 1
         if (self.model_type == 'vgg'):
             self.model = createFCN32sModel()
@@ -75,6 +81,98 @@ class Fcn:
         self.model.save_weights(os.path.join(save_dir, self.WEIGHTS_FILE_NAME))
         self.model.save(os.path.join(save_dir, self.ALL_IN_MODEL_FILE_NAME))
 
+    def load(self, model_name):
+        model_path = os.path.join(config.model_dir, model_name, self.ALL_IN_MODEL_FILE_NAME)
+        logger.debug('model_path: %s', model_path)
+        exists_all_in_one = os.path.exists(model_path)
+        if exists_all_in_one:
+            logger.debug('use all in one.')
+            self.model = models.load_model(model_path, custom_objects=None)
+        else:
+            model_path = os.path.join(config.model_dir, model_name, self.MODEL_FILE_NAME)
+            with open(model_path, 'r') as yaml_string:
+                self.model = models.model_from_yaml(yaml_string, custom_objects=None)
+            self.model.load_weights(os.path.join(config.model_dir, model_name, self.WEIGHTS_FILE_NAME), by_name=True)
+
+    def predict(self, image_file):
+        image_file = Path(image_file)
+        img = load_img(image_file, grayscale=False, target_size=(config.img_height, config.img_width))
+        img_array = img_to_array(img)
+        img_array /= 255
+        result = self.model.predict_on_batch(img_array.reshape((1,) + img_array.shape))
+        logger.debug(result.shape)
+        label_data = []
+        for i in range(len(result[0])):
+            label_data.append(np.argmax(result[0][i]))
+        fresult = np.reshape(label_data, (config.img_height, config.img_width))
+        logger.debug(fresult.shape)
+        fresult, predict_labels = colorful(fresult)
+        file_name = image_file.stem
+        im = Image.fromarray(np.uint8(fresult))
+        result_img = join_path(config.predict_dir, file_name + '-predict.jpg')
+        im.save(result_img)
+        return file_name + '-predict.jpg', predict_labels
+
+
+def colorful(img_array):
+
+    background = np.asarray([0, 0, 0])  # 0
+    aeroplane = np.asarray([255,40,0])  # 1
+    bicycle = np.asarray([250,245,0])  # 2
+    bird = np.asarray([53,161,107])  # 3
+    boat = np.asarray([0,135,60])  # 4
+    bottle = np.asarray([0,65,255])  # 5
+    bus = np.asarray([102,204,255])  # 6
+    car = np.asarray([255,153,160])  # 7
+    cat = np.asarray([255,40,255])  # 8
+    chair = np.asarray([255,153,0])  # 9
+    cow = np.asarray([154,0,121])  # 10
+    diningtable = np.asarray([190,0,68])  # 11
+    dog = np.asarray([24,24,120])  # 12
+    horse = np.asarray([102,51,0])  # 13
+    motorbike = np.asarray([100,100,100])  # 14
+    person = np.asarray([239,132,92])  # 15
+    pottedplant = np.asarray([245,176,144])  # 16
+    sheep = np.asarray([255,246,127])  # 17
+    sofa = np.asarray([105,189,131])  # 18
+    train = np.asarray([165,154,202])  # 19
+    tvmonitor = np.asarray([190,190,190])  # 20
+    boundary = np.asarray([255, 255, 255])  # 255 => 21
+
+    label_colors = np.array([
+        background, aeroplane, bicycle, bird,
+        boat, bottle, bus, car, cat, chair,
+        cow, diningtable, dog, horse, motorbike,
+        person, pottedplant, sheep, sofa,
+        train, tvmonitor, boundary
+    ])
+    labels = [
+        "background", "aeroplane", "bicycle", "bird",
+        "boat", "bottle", "bus", "car", "cat", "chair",
+        "cow", "diningtable", "dog", "horse", "motorbike",
+        "person", "pottedplant", "sheep", "sofa",
+        "train", "tvmonitor", "boundary"
+    ]
+
+    rgb_image = np.zeros((img_array.shape[0], img_array.shape[1], 3))
+    predict_labels = []
+    for h, tmp in enumerate(img_array):
+        for w, label in enumerate(tmp):
+            rgb_image[h, w] = label_colors[int(label)]
+            if int(label) == 0 or int(label) == 21:
+                continue
+            has_label = False
+            for l in predict_labels:
+                if l == labels[int(label)]:
+                    has_label = True
+                    break
+            if has_label == False:
+                predict_labels.append(labels[int(label)])
+
+    logger.debug('predict_labels: %s', predict_labels)
+    img = Image.fromarray(np.uint8(rgb_image))
+
+    return img, predict_labels
 
 def createDataGenerater(dataset):
 
