@@ -26,6 +26,9 @@ from keras.preprocessing.image import img_to_array, load_img
 from keras.applications.resnet50 import ResNet50
 from PIL import Image
 
+import pydensecrf.densecrf as dcrf
+from pydensecrf.utils import unary_from_softmax
+
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
 
@@ -106,10 +109,10 @@ class Fcn:
 
         result = self.model.predict_on_batch(img_array.reshape((1,) + img_array.shape))
         logger.debug(result.shape)
-        label_data = []
-        for i in range(len(result[0])):
-            label_data.append(np.argmax(result[0][i]))
-        fresult = np.reshape(label_data, (config.img_height, config.img_width))
+
+        fresult = getResult(result)
+        #img_copy = np.copy(np.uint8(img_array))
+        #fresult = getCRFResult(result, img_copy)
 
         # trim back
         trim_jpg = np.zeros([trim_h, trim_w])
@@ -125,6 +128,30 @@ class Fcn:
         im.save(result_img)
         return file_name + '-predict.jpg', predict_labels
 
+
+def getCRFResult(result, img):
+
+    _d = dcrf.DenseCRF2D(config.img_height, config.img_width, config.classes)
+    result = result[0]
+    label = result.reshape((config.img_height, config.img_width, config.classes)).transpose((2, 0, 1))
+    U = unary_from_softmax(label)
+    _d.setUnaryEnergy(U)
+    _d.addPairwiseGaussian(sxy=(3, 3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+    _d.addPairwiseBilateral(sxy=(80, 80), srgb=(13, 13, 13),
+        rgbim=img,
+        compat=10,
+        kernel=dcrf.DIAG_KERNEL,
+        normalization=dcrf.NORMALIZE_SYMMETRIC
+    )
+    Q = _d.inference(5)
+    return np.argmax(Q, axis=0).reshape((config.img_height, config.img_width))
+
+def getResult(result):
+
+    label_data = []
+    for i in range(len(result[0])):
+        label_data.append(np.argmax(result[0][i]))
+    return np.reshape(label_data, (config.img_height, config.img_width))
 
 def colorful(img_array):
 
