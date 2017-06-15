@@ -282,7 +282,7 @@ def createFCN32sModel():
     h_grid = int(round(config.img_height / 100))
     w_grid = int(round(config.img_width / 100))
     x = Conv2DTranspose(config.classes, (64, 64),
-                        output_shape=(None, h_grid * 102, w_grid * 102, config.classes),
+                        #output_shape=(None, h_grid * 102, w_grid * 102, config.classes),
                         strides=(34, 34),
                         padding='same',
                         name='deconvolution2d_1')(x)
@@ -338,7 +338,7 @@ def createResNetModel():
     h_grid = int(round(config.img_height / 100))
     w_grid = int(round(config.img_width / 100))
     x = Conv2DTranspose(config.classes, (64, 64),
-        output_shape=(None, h_grid * 102, w_grid * 102, config.classes),
+        #output_shape=(None, h_grid * 102, w_grid * 102, config.classes),
         strides=(34, 34),
         padding='same',
         name='deconvolution2d_1')(x)
