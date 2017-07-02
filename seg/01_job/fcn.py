@@ -143,7 +143,7 @@ def getCRFResult(result, img):
         kernel=dcrf.DIAG_KERNEL,
         normalization=dcrf.NORMALIZE_SYMMETRIC
     )
-    Q = _d.inference(5)
+    Q = _d.inference(1)
     return np.argmax(Q, axis=0).reshape((config.img_height, config.img_width))
 
 def getResult(result):
@@ -152,6 +152,35 @@ def getResult(result):
     for i in range(len(result[0])):
         label_data.append(np.argmax(result[0][i]))
     return np.reshape(label_data, (config.img_height, config.img_width))
+
+def colorfulA(img_array):
+    background = np.asarray([0, 0, 0])  # 0
+    city = np.asarray([255,40,0])  # 1
+    farm = np.asarray([250,245,0])  # 2
+    forest = np.asarray([53,161,107])  # 3
+
+    label_colors = np.array([background, city, farm, forest])
+    labels = ["background", "city", "farm", "forest"]
+    
+    rgb_image = np.zeros((img_array.shape[0], img_array.shape[1], 3))
+    predict_labels = []
+    for h, tmp in enumerate(img_array):
+        for w, label in enumerate(tmp):
+            rgb_image[h, w] = label_colors[int(label)]
+            if int(label) == 0:
+                continue
+            has_label = False
+            for l in predict_labels:
+                if l == labels[int(label)]:
+                    has_label = True
+                    break
+            if has_label == False:
+                predict_labels.append(labels[int(label)])
+
+    logger.debug('predict_labels: %s', predict_labels)
+    img = Image.fromarray(np.uint8(rgb_image))
+
+    return img, predict_labels
 
 def colorful(img_array):
 

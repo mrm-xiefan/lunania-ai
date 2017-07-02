@@ -118,29 +118,49 @@ def test():
 
 def save_npy():
 
-    file_path = Path("/opt/fr/other/tools/VOC2012/SegmentationClass")
+    #file_path = Path("/opt/fr/other/tools/VOC2012/SegmentationClass")
+    file_path = Path("/opt/homepage-miraimon/public/segup/acreage/png")
     max_height = 500
     max_width = 500
     for i, image_file in enumerate(file_path.glob('**/*.png')):
         full_name = str(image_file)
+        print(full_name)
         img_array = np.asarray(Image.open(image_file))
         file_name, ext = os.path.splitext(os.path.basename(full_name))
         if img_array.shape[0] < max_height:
             img_array = np.vstack([img_array, np.zeros([max_height - img_array.shape[0], img_array.shape[1]])])
         if img_array.shape[1] < max_width:
             img_array = np.hstack([img_array, np.zeros([img_array.shape[0], max_width - img_array.shape[1]])])
-        new_file = "/opt/fr/other/tools/VOC2012/npy/" + file_name + ".npy"
+
+        img_array = to_towdense(img_array)
+
+        new_file = "/home/ai/Datasets/acreage/" + file_name + ".npy"
         np.save(new_file, np.uint8(img_array))
 
-def check():
-    file_path = Path("/opt/fr/other/tools/VOC2012/npy")
+def to_towdense(img_array):
+
+    shape = img_array.shape
+    dist_img = np.zeros([shape[0],shape[1]])
+    
+    height = shape[0]
+    width = shape[1]
+    for h in range(height):
+        for w in range(width):
+            dist_img[h,w] = img_array[h,w][0]
+
+    return dist_img
+
+def check(fpath):
+    file_path = Path(fpath)
     for i, npy_file in enumerate(file_path.glob('**/*.npy')):
         npy_array = np.load(npy_file)
         print(npy_array[1][1])
-        #print(npy_array.shape)
+        print(npy_array.shape)
 
 if __name__ == '__main__':
-    resize_jpg()
+    #resize_jpg()
     save_npy()
-    #check()
+    #check("/home/ai/Datasets/acreage/")
+    #check("/home/ai/Datasets/resizedjpg/")
+    #save_npy_to_txt("/home/ai/Datasets/acreage/b1dab7c5-cccc-4bba-bbd1-9e8b7cbe40e2.npy")
 
